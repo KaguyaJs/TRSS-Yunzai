@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "types": [
+      "@kaguyajs/trss-yunzai-types"
+    ]
+  },
+  "include": [
+    "lib/",
+    "plugins/"
+  ]
+}
