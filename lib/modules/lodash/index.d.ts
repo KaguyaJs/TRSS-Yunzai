@@ -1,7 +1,6 @@
-import type _Toolkit from "es-toolkit/compat"
+import Toolkit from "es-toolkit/compat"
 
-declare module "es-toolkit/compat" {
-  interface CompatToolkit {
+declare const _: typeof Toolkit &  {
     /**
      * 将 sources 中的属性按顺序默认赋值给 object。
      * 仅在 object[key] 为 undefined 时才会赋值。
@@ -15,8 +14,5 @@ declare module "es-toolkit/compat" {
       ...sources: S
     ): T & S[number]
   }
-}
-
-declare const _: _Toolkit
 
 export default _
