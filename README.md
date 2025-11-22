@@ -1,3 +1,9 @@
+> [!NOTE]
+> 本仓库为 [TRSS-Yunzai](https://github.com/TimeRainStarSky/Yunzai) Fork分支  
+> 在原有的项目结构上增加了部分 TypeScript 类型支持以及一点点个人觉得有用的小修改  
+> 本分支后续应该会不定时持续同步原仓库更改  
+> 仅推荐开发环境使用本项目  
+
 <div align="center">
 
 # TRSS-Yunzai

@@ -1,4 +1,4 @@
-declare const _default: {
+declare const Cfg: {
     config: Record<string, any>;
     watcher: Record<string, any>;
     /** 监听配置文件 */
@@ -34,4 +34,4 @@ declare const _default: {
     getYaml(type: "default_config" | "config", name: string): Record<string, any>;
     change_bot(): Promise<void>;
 };
-export default _default;
+export default Cfg;

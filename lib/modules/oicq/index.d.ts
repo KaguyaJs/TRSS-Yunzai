@@ -1,3 +1,3 @@
-import { Segment } from "@kaguyajs/trss-yunzai-types/segment"
+import { Segment } from "trss-yunzai/segment"
 
 export const segment: Segment

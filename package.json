@@ -36,14 +36,14 @@
     "puppeteer": "^24.30.0",
     "redis": "^4.7.1",
     "sequelize": "^6.37.7",
-    "sqlite3": "npm:@karinjs/sqlite3@0.4.2",
+    "sqlite3": "npm:@karinjs/sqlite3@^0.4.2",
     "strip-ansi": "^7.1.2",
     "ulid": "^3.0.1",
     "ws": "^8.18.3",
     "yaml": "^2.8.1"
   },
   "devDependencies": {
-    "@kaguyajs/trss-yunzai-types": "latest",
+    "@types/trss-yunzai": "npm:@kaguyajs/trss-yunzai-types@^1.1.13",
     "prettier": "^3.6.2"
   },
   "imports": {

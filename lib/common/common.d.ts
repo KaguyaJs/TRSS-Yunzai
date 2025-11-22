@@ -1,4 +1,4 @@
-import { Yunzai, Utils, Group, Friend, BufferOptions } from "@kaguyajs/trss-yunzai-types";
+import { Yunzai, Utils, Group, Friend, BufferOptions } from "trss-yunzai";
 
 declare namespace _default {
     export { relpyPrivate };

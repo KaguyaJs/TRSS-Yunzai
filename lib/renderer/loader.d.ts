@@ -1,5 +1,8 @@
 import type Renderer from "./Renderer.js"
-import type cfg from "../config/config.js"
+
+declare global {
+  var Renderer: Renderer
+}
 
 /**
  * 渲染器加载器，用于动态加载 Renderer 实例

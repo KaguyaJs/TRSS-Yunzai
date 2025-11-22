@@ -1,5 +1,5 @@
-import type { Yunzai as YunzaiType } from "@kaguyajs/trss-yunzai-types"
+import type { Bot } from "trss-yunzai"
 
-declare const Yunzai: typeof YunzaiType
+declare const Yunzai: typeof Bot
 
 export default Yunzai

@@ -1,3 +1,3 @@
-import type { Plugin } from "@kaguyajs/trss-yunzai-types"
+import type { Plugin } from "trss-yunzai"
 
 declare const plugin: typeof Plugin
