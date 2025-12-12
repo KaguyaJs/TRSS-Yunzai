@@ -118,4 +118,7 @@ export interface ScreenshotOptions {
 
   /** 页面 goto 参数（覆盖默认配置） */
   pageGotoParams?: Record<string, any>
+
+  /** 携带给模板的参数 */
+  [k: string]: any
 }

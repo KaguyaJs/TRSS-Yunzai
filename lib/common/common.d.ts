@@ -1,4 +1,5 @@
 import { Yunzai, Utils, Group, Friend, BufferOptions } from "trss-yunzai";
+import { Sendable } from "trss-yunzai/icqq";
 
 declare namespace _default {
     export { relpyPrivate };
@@ -14,7 +15,7 @@ export default _default;
  * @param msg 消息
  * @param bot_id 机器人账号
  */
-declare function relpyPrivate(user_id: number | string, msg: any[], bot_id?: number | string): ReturnType<Yunzai["sendFriendMsg"]>;
+declare function relpyPrivate(user_id: number | string, msg: Sendable, bot_id?: number | string): ReturnType<Yunzai["sendFriendMsg"]>;
 /**
  * 休眠函数
  * @param ms 毫秒
@@ -38,4 +39,4 @@ declare function mkdirs(dirname: string): true;
  * @param msg 消息数组
  * @param dec 转发描述
  */
-declare function makeForwardMsg(e: any, msg: any[], dec?: string): ReturnType<Group['makeForwardMsg'] | Friend["makeForwardMsg"]> | { type: "node", data: any[] };
+declare function makeForwardMsg(e: any, msg: any[], dec?: string): ReturnType<Group['makeForwardMsg'] | Friend["makeForwardMsg"]>;

@@ -1,5 +1,7 @@
+import { icqq } from "trss-yunzai"
 import type { ScreenshotOptions } from "../../renderers/puppeteer/lib/puppeteer.js"
 import type Renderer from "../renderer/Renderer.js"
+
 
 /**
  * 渲染器实例（兼容手工引用 Puppeteer）
@@ -15,7 +17,7 @@ declare const renderer: Renderer & {
    * @param data 截图参数
    * @returns Buffer 或 false
    */
-  screenshot(name: string, data?: ScreenshotOptions): Promise<Buffer | false>
+  screenshot(name: string, data: ScreenshotOptions): Promise<icqq.ImageElem | false>
 
   /**
    * 多页截图
@@ -23,7 +25,7 @@ declare const renderer: Renderer & {
    * @param data 截图参数
    * @returns Buffer[] 或 false
    */
-  screenshots(name: string, data?: ScreenshotOptions): Promise<Buffer[] | false>
+  screenshots(name: string, data: ScreenshotOptions): Promise<Array<icqq.ImageElem> | false>
 }
 
 export default renderer
