@@ -14,7 +14,7 @@ CMD="${CMD:-tsyz}"
 CMDPATH="${CMDPATH:-/usr/local/bin}"
 DKNAME="${DKNAME:-Yunzai}"
 DKURL="${DKURL:-docker.m.daocloud.io}"
-GITURL="${GITURL:-https://gitee.com/TimeRainStarSky/Yunzai}"
+GITURL="${GITURL:-https://git.trss.me/Yunzai}"
 APTURL="${APTURL:-mirrors.ustc.edu.cn}"
 APTDEP="${APTDEP:-chromium fonts-lxgw-wenkai fonts-noto-color-emoji}"
 NPMURL="${NPMURL:-https://registry.npmmirror.com}"
@@ -74,7 +74,7 @@ echo "FROM $DKURL"'/library/node:slim
 RUN sed -i "s|deb.debian.org|'"$APTURL"'|g" /etc/apt/sources.list.d/debian.sources\
  && apt update\
  && apt install -y ca-certificates\
- && sed -i "s|http://'"$APTURL"'|https://'"$APTURL"'|;s|bookworm-updates|bookworm-updates bookworm-backports|" /etc/apt/sources.list.d/debian.sources\
+ && sed -i "s|http://'"$APTURL"'|https://'"$APTURL"'|" /etc/apt/sources.list.d/debian.sources\
  && apt update\
  && apt full-upgrade -y\
  && apt install -y curl git valkey-server '"$APTDEP"'\

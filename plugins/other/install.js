@@ -3,12 +3,12 @@ import { Restart } from "./restart.js"
 let insing = false
 const list = {
   Atlas: "https://gitee.com/Nwflower/atlas",
-  genshin: "https://gitee.com/TimeRainStarSky/Yunzai-genshin",
+  genshin: "https://git.trss.me/Yunzai-genshin",
   "DF-Plugin": "https://gitee.com/DenFengLai/DF-Plugin",
   "ws-plugin": "https://gitee.com/xiaoye12123/ws-plugin",
-  "TRSS-Plugin": "https://Yunzai.TRSS.me",
+  "TRSS-Plugin": "https://git.trss.me/TRSS-Plugin",
   "miao-plugin": "https://gitcode.com/TimeRainStarSky/miao-plugin.git",
-  "Philia-Plugin": "https://gitee.com/TRSSo/Yunzai-Philia-Plugin",
+  "Philia-Plugin": "https://org.trss.me/Yunzai-Philia-Plugin",
   "Guoba-Plugin": "https://gitee.com/guoba-yunzai/guoba-plugin",
   "yenai-plugin": "https://gitee.com/yeyang52/yenai-plugin",
   "flower-plugin": "https://gitee.com/Nwflower/flower-plugin",
@@ -18,13 +18,14 @@ const list = {
   "StarRail-plugin": "https://gitee.com/hewang1an/StarRail-plugin",
   "xiaoyao-cvs-plugin": "https://gitcode.com/TimeRainStarSky/xiaoyao-cvs-plugin.git",
   "trss-xianxin-plugin": "https://gitee.com/snowtafir/xianxin-plugin",
-  "Telegram-Plugin": "https://gitee.com/TimeRainStarSky/Yunzai-Telegram-Plugin",
-  "Discord-Plugin": "https://gitee.com/TimeRainStarSky/Yunzai-Discord-Plugin",
-  "WeChat-Plugin": "https://gitee.com/TimeRainStarSky/Yunzai-WeChat-Plugin",
-  "QQBot-Plugin": "https://gitee.com/TimeRainStarSky/Yunzai-QQBot-Plugin",
-  "Route-Plugin": "https://gitee.com/TimeRainStarSky/Yunzai-Route-Plugin",
-  "ICQQ-Plugin": "https://gitee.com/TimeRainStarSky/Yunzai-ICQQ-Plugin",
-  "KOOK-Plugin": "https://gitee.com/TimeRainStarSky/Yunzai-KOOK-Plugin",
+  "Telegram-Plugin": "https://git.trss.me/Yunzai-Telegram-Plugin",
+  "Discord-Plugin": "https://git.trss.me/Yunzai-Discord-Plugin",
+  "WeChat-Plugin": "https://git.trss.me/Yunzai-WeChat-Plugin",
+  "QQBot-Plugin": "https://git.trss.me/Yunzai-QQBot-Plugin",
+  "Route-Plugin": "https://git.trss.me/Yunzai-Route-Plugin",
+  "ICQQ-Plugin": "https://git.trss.me/Yunzai-ICQQ-Plugin",
+  "KOOK-Plugin": "https://git.trss.me/Yunzai-KOOK-Plugin",
+  "Secluded-Plugin": "https://github.com/Lovely02Y/Secluded-Adapter",
 }
 const map = {}
 for (const i in list) map[i.replace(/-[Pp]lugin$/, "")] = i

@@ -99,7 +99,7 @@ export class update extends plugin {
   async runUpdate(plugin = "") {
     let cm = "git pull"
     let type = "更新"
-    if (!plugin) cm = `git checkout package.json && ${cm}`
+    if (!plugin) cm = `git checkout package.json pnpm-workspace.yaml && ${cm}`
 
     if (this.e.msg.includes("强制")) {
       type = "强制更新"
@@ -213,10 +213,8 @@ export class update extends plugin {
   }
 
   async updatePackage() {
-    const cmd = "pnpm install"
-    if (process.platform === "win32") return this.reply(`检测到依赖更新，请 #关机 后执行 ${cmd}`)
     await this.reply("开始更新依赖")
-    return this.exec(cmd)
+    return this.exec("pnpm install")
   }
 
   restart() {

@@ -52,10 +52,17 @@ Bot.adapter.push(
       return file
     }
 
-    async makeMsg(msg) {
+    /**
+     * @param msg 消息
+     * @param splitFile 是否将 file 段剥离到 files 由专用上传 API 发送
+     *   send_msg 需要剥离（部分协议端不再自动路由 file 段），
+     *   合并转发节点必须保留在 content 内，节点没有可用的上传 API
+     */
+    async makeMsg(msg, splitFile = true) {
       if (!Array.isArray(msg)) msg = [msg]
       const msgs = []
       const forward = []
+      const files = []
       for (let i of msg) {
         if (typeof i !== "object") i = { type: "text", data: { text: i } }
         else if (!i.data) i = { type: i.type, data: { ...i, type: undefined } }
@@ -72,20 +79,27 @@ Bot.adapter.push(
           case "node":
             forward.push(...i.data)
             continue
+          case "file":
+            if (splitFile) {
+              files.push({ file: i.data.file, name: i.data.name })
+              continue
+            }
+            break
           case "raw":
             i = i.data
             break
         }
 
-        if (i.data.file) i.data.file = await this.makeFile(i.data.file)
+        if (i.data?.file) i.data.file = await this.makeFile(i.data.file)
 
         msgs.push(i)
       }
-      return [msgs, forward]
+      return [msgs, forward, files]
     }
 
-    async sendMsg(msg, send, sendForwardMsg) {
-      const [message, forward] = await this.makeMsg(msg)
+    async sendMsg(msg, send, sendForwardMsg, sendFile) {
+      /** 无专用上传回调时(如频道)保持 file 段内联，行为与旧版一致，不静默丢弃 */
+      const [message, forward, files] = await this.makeMsg(msg, Boolean(sendFile))
       const ret = []
 
       if (forward.length) {
@@ -93,6 +107,8 @@ Bot.adapter.push(
         if (Array.isArray(data)) ret.push(...data)
         else ret.push(data)
       }
+
+      for (const { file, name } of files) ret.push(await sendFile(file, name))
 
       if (message.length) ret.push(await send(message))
       if (ret.length === 1) return ret[0]
@@ -118,6 +134,7 @@ Bot.adapter.push(
           })
         },
         msg => this.sendFriendForwardMsg(data, msg),
+        (file, name) => this.sendFriendFile(data, file, name),
       )
     }
 
@@ -137,6 +154,7 @@ Bot.adapter.push(
           })
         },
         msg => this.sendGroupForwardMsg(data, msg),
+        (file, name) => this.sendGroupFile(data, file, undefined, name),
       )
     }
 
@@ -228,7 +246,8 @@ Bot.adapter.push(
     async makeForwardMsg(msg) {
       const msgs = []
       for (const i of msg) {
-        const [content, forward] = await this.makeMsg(i.message)
+        /** 转发节点内保留 file 段，剥离会导致整段文件丢失，只含文件的节点还会整条消失 */
+        const [content, forward] = await this.makeMsg(i.message, false)
         if (forward.length) msgs.push(...(await this.makeForwardMsg(forward)))
         if (content.length)
           msgs.push({
@@ -287,13 +306,14 @@ Bot.adapter.push(
       return map
     }
 
-    async getFriendInfo(data) {
+    async getFriendInfo(data, no_cache, add) {
       const info = (
         await data.bot.sendApi("get_stranger_info", {
           user_id: data.user_id,
+          no_cache,
         })
       ).data
-      data.bot.fl.set(data.user_id, info)
+      if (add || data.bot.fl.has(data.user_id)) data.bot.fl.set(data.user_id, info)
       return info
     }
 
@@ -330,13 +350,14 @@ Bot.adapter.push(
       return map
     }
 
-    async getGroupInfo(data) {
+    async getGroupInfo(data, no_cache, add) {
       const info = (
         await data.bot.sendApi("get_group_info", {
           group_id: data.group_id,
+          no_cache,
         })
       ).data
-      data.bot.gl.set(data.group_id, info)
+      if (add || data.bot.gl.has(data.group_id)) data.bot.gl.set(data.group_id, info)
       return info
     }
 
@@ -371,19 +392,20 @@ Bot.adapter.push(
       }
     }
 
-    async getMemberInfo(data) {
+    async getMemberInfo(data, no_cache, add) {
       const info = (
         await data.bot.sendApi("get_group_member_info", {
           group_id: data.group_id,
           user_id: data.user_id,
+          no_cache,
         })
       ).data
       let gml = data.bot.gml.get(data.group_id)
       if (!gml) {
         gml = new Map()
-        data.bot.gml.set(data.group_id, gml)
+        if (add || data.bot.gl.has(data.group_id)) data.bot.gml.set(data.group_id, gml)
       }
-      gml.set(data.user_id, info)
+      if (add || gml.has(data.user_id)) gml.set(data.user_id, info)
       return info
     }
 
@@ -439,7 +461,7 @@ Bot.adapter.push(
     async getGuildMemberList(data) {
       const array = []
       for (const { user_id } of await this.getGuildMemberArray(data)) array.push(user_id)
-      return array.push
+      return array
     }
 
     async getGuildMemberMap(data) {
@@ -591,6 +613,28 @@ Bot.adapter.push(
       })
     }
 
+    async sendGroupNotice(data, content, opts = {}) {
+      Bot.makeLog(
+        "info",
+        [`发送群公告：${content}`, opts],
+        `${data.self_id} => ${data.group_id}`,
+        true,
+      )
+      if (opts.image) opts.image = await this.makeFile(opts.image)
+      return data.bot.sendApi("_send_group_notice", {
+        group_id: data.group_id,
+        content,
+        ...opts,
+      })
+    }
+
+    getGroupNotice(data) {
+      Bot.makeLog("info", "获取群公告", `${data.self_id} => ${data.group_id}`, true)
+      return data.bot.sendApi("_get_group_notice", {
+        group_id: data.group_id,
+      })
+    }
+
     downloadFile(data, url, thread_count, headers) {
       return data.bot.sendApi("download_file", {
         url,
@@ -611,6 +655,15 @@ Bot.adapter.push(
         file: (await this.makeFile(file, { file: true })).replace("file://", ""),
         name,
       })
+    }
+
+    async getPrivateFileUrl(data, file_id) {
+      return (
+        await data.bot.sendApi("get_private_file_url", {
+          user_id: data.user_id,
+          file_id,
+        })
+      ).url
     }
 
     async sendGroupFile(data, file, folder, name = path.basename(file)) {
@@ -747,6 +800,7 @@ Bot.adapter.push(
         getChatHistory: this.getFriendMsgHistory.bind(this, i),
         thumbUp: this.sendLike.bind(this, i),
         delete: this.deleteFriend.bind(this, i),
+        getFileUrl: this.getPrivateFileUrl.bind(this, i),
       }
     }
 
@@ -856,6 +910,11 @@ Bot.adapter.push(
         muteAll: this.setGroupWholeKick.bind(this, i),
         kickMember: this.setGroupKick.bind(this, i),
         quit: this.setGroupLeave.bind(this, i),
+        get announce() {
+          return this.sendNotice
+        },
+        sendNotice: this.sendGroupNotice.bind(this, i),
+        getNotice: this.getGroupNotice.bind(this, i),
         fs: this.getGroupFs(i),
         get is_owner() {
           return data.bot.gml.get(group_id)?.get(data.self_id)?.role === "owner"
@@ -1093,9 +1152,9 @@ Bot.adapter.push(
             true,
           )
           const group = data.bot.pickGroup(data.group_id)
-          group.getInfo()
+          group.getInfo(true, true)
           if (data.user_id === data.self_id && cfg.bot.cache_group_member) group.getMemberMap()
-          else group.pickMember(data.user_id).getInfo()
+          else group.pickMember(data.user_id).getInfo(true, true)
           break
         }
         case "group_decrease": {
@@ -1109,7 +1168,7 @@ Bot.adapter.push(
             data.bot.gl.delete(data.group_id)
             data.bot.gml.delete(data.group_id)
           } else {
-            data.bot.pickGroup(data.group_id).getInfo()
+            data.bot.pickGroup(data.group_id).getInfo(true, true)
             data.bot.gml.get(data.group_id)?.delete(data.user_id)
           }
           break
@@ -1122,7 +1181,7 @@ Bot.adapter.push(
             true,
           )
           data.set = data.sub_type === "set"
-          data.bot.pickMember(data.group_id, data.user_id).getInfo()
+          data.bot.pickMember(data.group_id, data.user_id).getInfo(true, true)
           break
         case "group_upload":
           Bot.makeLog(
@@ -1147,7 +1206,8 @@ Bot.adapter.push(
             `${data.self_id} <= ${data.group_id}`,
             true,
           )
-          data.bot.pickMember(data.group_id, data.user_id).getInfo()
+          if (data.user_id !== 0)
+            data.bot.pickMember(data.group_id, data.user_id).getInfo(true, true)
           break
         case "group_msg_emoji_like":
           Bot.makeLog(
@@ -1159,7 +1219,7 @@ Bot.adapter.push(
           break
         case "friend_add":
           Bot.makeLog("info", "好友添加", `${data.self_id} <= ${data.user_id}`, true)
-          data.bot.pickFriend(data.user_id).getInfo()
+          data.bot.pickFriend(data.user_id).getInfo(true, true)
           break
         case "notify":
           if (data.group_id) data.notice_type = "group"
@@ -1182,6 +1242,22 @@ Bot.adapter.push(
                   data.self_id,
                 )
               break
+            case "poke_recall":
+              data.operator_id = data.user_id
+              if (data.group_id)
+                Bot.makeLog(
+                  "info",
+                  `群戳一戳撤回：${data.operator_id} => ${data.target_id}`,
+                  `${data.self_id} <= ${data.group_id}`,
+                  true,
+                )
+              else
+                Bot.makeLog(
+                  "info",
+                  `好友戳一戳撤回：${data.operator_id} => ${data.target_id}`,
+                  data.self_id,
+                )
+              break
             case "honor":
               Bot.makeLog(
                 "info",
@@ -1189,7 +1265,7 @@ Bot.adapter.push(
                 `${data.self_id} <= ${data.group_id}, ${data.user_id}`,
                 true,
               )
-              data.bot.pickMember(data.group_id, data.user_id).getInfo()
+              data.bot.pickMember(data.group_id, data.user_id).getInfo(true, true)
               break
             case "title":
               Bot.makeLog(
@@ -1198,7 +1274,7 @@ Bot.adapter.push(
                 `${data.self_id} <= ${data.group_id}, ${data.user_id}`,
                 true,
               )
-              data.bot.pickMember(data.group_id, data.user_id).getInfo()
+              data.bot.pickMember(data.group_id, data.user_id).getInfo(true, true)
               break
             case "group_name":
               Bot.makeLog(
@@ -1207,7 +1283,7 @@ Bot.adapter.push(
                 `${data.self_id} <= ${data.group_id}, ${data.user_id}`,
                 true,
               )
-              data.bot.pickGroup(data.group_id).getInfo()
+              data.bot.pickGroup(data.group_id).getInfo(true, true)
               break
             case "input_status":
               data.post_type = "internal"
@@ -1235,7 +1311,7 @@ Bot.adapter.push(
             `${data.self_id} <= ${data.group_id}, ${data.user_id}`,
             true,
           )
-          data.bot.pickMember(data.group_id, data.user_id).getInfo()
+          data.bot.pickMember(data.group_id, data.user_id).getInfo(true, true)
           break
         case "offline_file":
           Bot.makeLog(
